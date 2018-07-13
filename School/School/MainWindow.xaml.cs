@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using School.Data;
-using System.Globalization;
+
 
 namespace School
 {
@@ -57,7 +58,7 @@ namespace School
         // When the user presses a key, determine whether to add a new student to a class, remove a student from a class, or modify the details of a student
         private void studentsList_KeyDown(object sender, KeyEventArgs e)
         {
-            switch(e.Key)
+            switch (e.Key)
             {
                 // If the user pressed Enter, edit the details for the currently selected student
                 case Key.Enter: Student student = this.studentsList.SelectedItem as Student;
@@ -65,14 +66,14 @@ namespace School
                     // Use the StudentsForm to display and edit the details of the student
                     StudentForm sf = new StudentForm();
 
-                    // Set the title of the form and populate the fields on the form with the details of the student
+                    // Set the title of the form and populate the fields on the form with the details of the student           
                     sf.Title = "Edit Student Details";
                     sf.firstName.Text = student.FirstName;
                     sf.lastName.Text = student.LastName;
-                    sf.dateOfBirth.Text = student.DateOfBirth.ToString("d");
+                    sf.dateOfBirth.Text = student.DateOfBirth.ToString("d"); // Format the date to omit the time element
 
                     // Display the form
-                    if(sf.ShowDialog().Value)
+                    if (sf.ShowDialog().Value)
                     {
                         // When the user closes the form, copy the details back to the student
                         student.FirstName = sf.firstName.Text;
@@ -82,6 +83,38 @@ namespace School
                         saveChanges.IsEnabled = true;
                     }
                     break;
+
+                // If the user pressed Insert, add a new student
+                case Key.Insert:
+
+                    // Use the StudentsForm to get the details of the student from the user
+                    sf = new StudentForm();
+
+                    // Set the title of the form to indicate which class the student will be added to (the class for the currently selected teacher)
+                    sf.Title = "New Student for Class " + teacher.Class;
+
+                    // Display the form and get the details of the new student
+                    if(sf.ShowDialog().Value)
+                    {
+                        // When the user closes the form, retrieve the details of the student from the form and use them to create a new Student object
+                        Student newStudent = new Student();
+                        newStudent.FirstName = sf.firstName.Text;
+                        newStudent.LastName = sf.lastName.Text;
+                        newStudent.DateOfBirth = DateTime.ParseExact(sf.dateOfBirth.Text, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+                        // Assign the new student to the current teacher
+                        this.teacher.Students.Add(newStudent);
+
+                        // Add the student to the list displayed on the form
+                        this.studentsInfo.Add(newStudent);
+
+                        // Enable saving (changes are not made permanent until they are written back to the database)
+                        saveChanges.IsEnabled = true;
+                    }
+                    break;
+                    
+                    
+                    
+                    
             }
         }
 
