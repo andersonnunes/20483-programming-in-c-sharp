@@ -80,6 +80,7 @@ namespace School
                         student.FirstName = sf.firstName.Text;
                         student.LastName = sf.lastName.Text;
                         student.DateOfBirth = DateTime.ParseExact(sf.dateOfBirth.Text, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+
                         // Enable saving (changes are not made permanent until they are written back to the database)
                         saveChanges.IsEnabled = true;
                     }
@@ -103,6 +104,7 @@ namespace School
                         newStudent.FirstName = sf.firstName.Text;
                         newStudent.LastName = sf.lastName.Text;
                         newStudent.DateOfBirth = DateTime.ParseExact(sf.dateOfBirth.Text, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+
                         // Assign the new student to the current teacher
                         this.teacher.Students.Add(newStudent);
 
@@ -115,22 +117,24 @@ namespace School
                     break;
 
                 // If the user pressed Delete, remove the currently selected student
-                case Key.Delete: student = this.studentsList.SelectedItem as Student;
+                case Key.Delete:
+                    student = this.studentsList.SelectedItem as Student;
+
                     // Prompt the user to confirm that the student should be removed
-                    MessageBoxResult response = MessageBox.Show(string.Format("Remove {0}", student.FirstName + " " + student.LastName), 
-                        "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+                    MessageBoxResult response = MessageBox.Show(
+                        String.Format("Remove {0}", student.FirstName + " " + student.LastName),
+                        "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question,
+                        MessageBoxResult.No);
 
                     // If the user clicked Yes, remove the student from the database
-                    if(response == MessageBoxResult.Yes)
+                    if (response == MessageBoxResult.Yes)
                     {
                         this.schoolContext.Students.DeleteObject(student);
+
                         // Enable saving (changes are not made permanent until they are written back to the database)
                         saveChanges.IsEnabled = true;
                     }
                     break;
-                    
-                    
-                    
             }
         }
 
@@ -156,7 +160,26 @@ namespace School
         public object Convert(object value, Type targetType, object parameter,
                               System.Globalization.CultureInfo culture)
         {
-            return "";
+            // Convert the date of birth provided in the value parameter and convert to the age of the student in years
+            // Check that the value provided is not null. If it is, return an empty string
+            if (value != null)
+            {
+                // Convert the value provided into a DateTime value
+                DateTime studentDateOfBirth = (DateTime)value;
+
+                // Work out the difference between the current date and the value provided
+                TimeSpan difference = DateTime.Now.Subtract(studentDateOfBirth);
+
+                // Convert this result into a number of years
+                int ageInYears = (int)(difference.Days / 365.25);
+
+                // Convert the number of years into a string and return it
+                return ageInYears.ToString();
+            }
+            else
+            {
+                return "";
+            }
         }
 
         #region Predefined code
